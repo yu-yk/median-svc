@@ -4,10 +4,15 @@ package median;
 option go_package = "./pb";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 service median {
   rpc PushNumber (PushNumberRequest) returns (PushNumberResponse);
-  rpc GetMedian (GetMedianRequest) returns (GetMedianResponse);
+  rpc GetMedian (GetMedianRequest) returns (GetMedianResponse) {
+    option (google.api.http) = {
+      get: "median"
+    };
+  };
 }
 
 message PushNumberRequest {
