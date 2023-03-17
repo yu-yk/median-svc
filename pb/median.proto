@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package median;
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+
+service median {
+  rpc PushNumber (PushNumberRequest) returns (PushNumberResponse);
+  rpc GetMedian (GetMedianRequest) returns (GetMedianResponse);
+}
+
+message PushNumberRequest {
+  int32 number = 1;
+}
+
+message PushNumberResponse {
+  Status status = 1;
+}
+
+message GetMedianRequest {
+
+}
+
+message GetMedianResponse {
+  int32 median = 1;
+}
+
+message Status {
+  int32 median = 1;
+  int32 size = 2;
+  google.protobuf.Timestamp last_updated = 3;
+}
