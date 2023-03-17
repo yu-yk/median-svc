@@ -1,28 +1,14 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net"
 
+	"github.com/yu-yk/median-svc/median"
 	"github.com/yu-yk/median-svc/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
-
-type server struct {
-	pb.UnimplementedMedianServer
-}
-
-func (s *server) PushNumber(ctx context.Context, req *pb.PushNumberRequest) (*pb.PushNumberResponse, error) {
-	return &pb.PushNumberResponse{
-		Status: &pb.Status{},
-	}, nil
-}
-
-func (s *server) GetMedianRequest(ctx context.Context, req *pb.GetMedianRequest) (*pb.GetMedianResponse, error) {
-	return &pb.GetMedianResponse{}, nil
-}
 
 func main() {
 	listener, err := net.Listen("tcp", ":3000")
@@ -31,7 +17,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	medianServer := &server{}
+	medianServer := median.NewServer()
 
 	pb.RegisterMedianServer(grpcServer, medianServer)
 	reflection.Register(grpcServer)

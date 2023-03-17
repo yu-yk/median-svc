@@ -23,11 +23,11 @@ message GetMedianRequest {
 }
 
 message GetMedianResponse {
-  int32 median = 1;
+  Status status = 1;
 }
 
 message Status {
-  int32 median = 1;
+  double median = 1;
   int32 size = 2;
   google.protobuf.Timestamp last_updated = 3;
 }
