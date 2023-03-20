@@ -5,26 +5,26 @@ import (
 	"context"
 
 	"github.com/yu-yk/median-svc/lib"
-	"github.com/yu-yk/median-svc/pb"
+	"github.com/yu-yk/median-svc/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type server struct {
-	pb.UnimplementedMedianServer
+	proto.UnimplementedMedianServer
 	leftHeap  lib.MaxHeap
 	rightHeap lib.MinHeap
-	status    pb.Status
+	status    proto.Status
 }
 
 func NewServer() *server {
 	return &server{
 		leftHeap:  lib.MaxHeap{},
 		rightHeap: lib.MinHeap{},
-		status:    pb.Status{},
+		status:    proto.Status{},
 	}
 }
 
-func (s *server) PushNumber(ctx context.Context, req *pb.PushNumberRequest) (*pb.PushNumberResponse, error) {
+func (s *server) PushNumber(ctx context.Context, req *proto.PushNumberRequest) (*proto.PushNumberResponse, error) {
 	// 1. check the num is smaller than left's top or not
 	// 2. if yes, push then num to left, else push to right
 	// 3. if the length difference of left and right is >= 2,
@@ -55,11 +55,11 @@ func (s *server) PushNumber(ctx context.Context, req *pb.PushNumberRequest) (*pb
 	s.status.Size = int32(s.leftHeap.Len() + s.rightHeap.Len())
 	s.status.LastUpdated = timestamppb.Now()
 
-	return &pb.PushNumberResponse{
+	return &proto.PushNumberResponse{
 		Status: &s.status,
 	}, nil
 }
 
-func (s *server) GetMedian(ctx context.Context, req *pb.GetMedianRequest) (*pb.GetMedianResponse, error) {
-	return &pb.GetMedianResponse{Status: &s.status}, nil
+func (s *server) GetMedian(ctx context.Context, req *proto.GetMedianRequest) (*proto.GetMedianResponse, error) {
+	return &proto.GetMedianResponse{Status: &s.status}, nil
 }

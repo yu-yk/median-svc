@@ -8,7 +8,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/yu-yk/median-svc/median"
-	"github.com/yu-yk/median-svc/pb"
+	"github.com/yu-yk/median-svc/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -25,7 +25,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	medianServer := median.NewServer()
 
-	pb.RegisterMedianServer(grpcServer, medianServer)
+	proto.RegisterMedianServer(grpcServer, medianServer)
 	reflection.Register(grpcServer)
 
 	go func() {
@@ -40,7 +40,7 @@ func main() {
 
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	if err := pb.RegisterMedianHandlerFromEndpoint(ctx, mux, ":3000", opts); err != nil {
+	if err := proto.RegisterMedianHandlerFromEndpoint(ctx, mux, ":3000", opts); err != nil {
 		log.Panicf("failed to serve: %v", err)
 	}
 

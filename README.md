@@ -1,9 +1,12 @@
 # median-svc
 A hands-on practice for GRPC service to calculate median
 
-- [ ]  Use fx
+- [ ]  Use `fx`
 - [ ]  Use logger
 - [x]  Use grpc
-- [ ]  Use grpc-gateway to generate and export http interface (WIP)
+- [x]  Use grpc-gateway to generate and export http interface
+- [x]  Use `buf` https://docs.buf.build/installation
+- [x]  Use taskfile
+- [x]  Use `tools.go` to manage tool dependencies https://www.alexedwards.net/blog/using-go-run-to-manage-tool-dependencies
 - [ ]  Familiar with options pattern
 - [ ]  Deploy a Kubernetes application in Minikube

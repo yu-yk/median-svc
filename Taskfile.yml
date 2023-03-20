@@ -1,0 +1,66 @@
+version: '3'
+
+vars:
+  BIN: '{{ clean (print .PWD "/bin") }}'
+  PWD:
+    sh: pwd
+
+tasks:
+  build:
+    cmds:
+      - go build -v .
+    sources:
+      - ./*.go
+    generates:
+      - median-svc
+  
+  buf:build:
+    cmds:
+      - "{{.BIN}}/buf generate proto"
+    sources:
+      - ./proto/*.proto
+    generates:
+      - ./proto/**/*.go
+
+  install:
+    cmds:
+      - task: install-buf
+      - task: install-plugins
+
+  install-buf:
+    cmds:
+      - echo install buf for {{.OS}}-{{.ARCH}}
+      - mkdir -p {{.BIN}}
+      - rm -rf {{.BIN}}/buf # remove old one to avoid codesign issues
+      - go install github.com/bufbuild/buf/cmd/buf
+    env:
+      GOBIN: "{{.BIN}}"
+    generates:
+      - ./bin/buf
+    sources:
+      - ./tools/tools.go
+      - ./go.mod
+    vars:
+      ARCH: '{{ ARCH | replace "amd64" "x86_64" }}'
+      OS: "{{ OS | title}}"
+      PROTOC: |
+        #!/bin/sh
+        exec ./buf protoc "$@"
+
+  install-plugins:
+    cmds:
+      - echo installing protoc plugins into $GOBIN
+      - >
+        go install
+        github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+        github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+        google.golang.org/grpc/cmd/protoc-gen-go-grpc
+        google.golang.org/protobuf/cmd/protoc-gen-go
+      - go install github.com/envoyproxy/protoc-gen-validate@v0.6.2
+    env:
+      GOBIN: "{{.BIN}}"
+    generates:
+      - ./bin/protoc-*
+    sources:
+      - ./tools/tools.go
+      - ./go.mod
