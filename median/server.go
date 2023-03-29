@@ -9,22 +9,22 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type server struct {
+type Server struct {
 	proto.UnimplementedMedianServer
 	leftHeap  lib.MaxHeap
 	rightHeap lib.MinHeap
 	status    proto.Status
 }
 
-func NewServer() *server {
-	return &server{
+func NewServer() *Server {
+	return &Server{
 		leftHeap:  lib.MaxHeap{},
 		rightHeap: lib.MinHeap{},
 		status:    proto.Status{},
 	}
 }
 
-func (s *server) PushNumber(ctx context.Context, req *proto.PushNumberRequest) (*proto.PushNumberResponse, error) {
+func (s *Server) PushNumber(ctx context.Context, req *proto.PushNumberRequest) (*proto.PushNumberResponse, error) {
 	// 1. check the num is smaller than left's top or not
 	// 2. if yes, push then num to left, else push to right
 	// 3. if the length difference of left and right is >= 2,
@@ -60,6 +60,6 @@ func (s *server) PushNumber(ctx context.Context, req *proto.PushNumberRequest) (
 	}, nil
 }
 
-func (s *server) GetMedian(ctx context.Context, req *proto.GetMedianRequest) (*proto.GetMedianResponse, error) {
+func (s *Server) GetMedian(ctx context.Context, req *proto.GetMedianRequest) (*proto.GetMedianResponse, error) {
 	return &proto.GetMedianResponse{Status: &s.status}, nil
 }

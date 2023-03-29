@@ -1,8 +1,9 @@
 # median-svc
 A hands-on practice for GRPC service to calculate median
 
-- [ ]  Use `fx`
+- [x]  Use `fx`
 - [ ]  Use logger
+- [ ]  Use cobra cli pkg
 - [x]  Use grpc
 - [x]  Use grpc-gateway to generate and export http interface
 - [x]  Use `buf` https://docs.buf.build/installation

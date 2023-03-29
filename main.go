@@ -9,43 +9,67 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/yu-yk/median-svc/median"
 	"github.com/yu-yk/median-svc/proto"
+	"go.uber.org/fx"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
-func main() {
-	// gprc
-	listener, err := net.Listen("tcp", ":3000")
-	if err != nil {
-		panic(err)
-	}
-	defer listener.Close()
-
+func newGRPCService(lc fx.Lifecycle) *median.Server {
 	grpcServer := grpc.NewServer()
 	medianServer := median.NewServer()
 
 	proto.RegisterMedianServer(grpcServer, medianServer)
 	reflection.Register(grpcServer)
 
-	go func() {
-		if err := grpcServer.Serve(listener); err != nil {
-			log.Panicf("failed to serve: %v", err)
-		}
-	}()
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			listener, err := net.Listen("tcp", ":3000")
+			if err != nil {
+				return err
+			}
+			log.Println("serving grpc at tcp:3000")
+			go grpcServer.Serve(listener)
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			grpcServer.GracefulStop()
+			return nil
+		},
+	})
 
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	return medianServer
+}
 
+func newHttpService(lc fx.Lifecycle, mediaServer *median.Server) *http.Server {
 	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	if err := proto.RegisterMedianHandlerFromEndpoint(ctx, mux, ":3000", opts); err != nil {
-		log.Panicf("failed to serve: %v", err)
-	}
+	server := &http.Server{Addr: ":3001", Handler: mux}
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			err := proto.RegisterMedianHandlerServer(ctx, mux, mediaServer)
+			// opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+			// err := proto.RegisterMedianHandlerFromEndpoint(ctx, mux, ":3000", opts)
+			if err != nil {
+				return err
+			}
+			log.Println("serving http at :3001")
+			go server.ListenAndServe()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			return server.Close()
+		},
+	})
 
-	// http
-	if err := http.ListenAndServe(":3001", mux); err != nil {
-		log.Panicf("failed to serve: %v", err)
-	}
+	return server
+}
+
+func main() {
+	fx.New(
+		fx.Provide(
+			newGRPCService,
+			newHttpService,
+		),
+		fx.Invoke(func(*median.Server) {}),
+		fx.Invoke(func(*http.Server) {}),
+	).Run()
 }
