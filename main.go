@@ -14,13 +14,16 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func newGRPCService(lc fx.Lifecycle) *median.Server {
+func newGRPCService() (*grpc.Server, *median.Server) {
 	grpcServer := grpc.NewServer()
 	medianServer := median.NewServer()
 
+	return grpcServer, medianServer
+}
+
+func registerGRPCService(lc fx.Lifecycle, grpcServer *grpc.Server, medianServer *median.Server) {
 	proto.RegisterMedianServer(grpcServer, medianServer)
 	reflection.Register(grpcServer)
-
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			listener, err := net.Listen("tcp", ":3000")
@@ -36,11 +39,9 @@ func newGRPCService(lc fx.Lifecycle) *median.Server {
 			return nil
 		},
 	})
-
-	return medianServer
 }
 
-func newHttpService(lc fx.Lifecycle, mediaServer *median.Server) *http.Server {
+func registerHTTPGateway(lc fx.Lifecycle, mediaServer *median.Server) *http.Server {
 	mux := runtime.NewServeMux()
 	server := &http.Server{Addr: ":3001", Handler: mux}
 	lc.Append(fx.Hook{
@@ -67,9 +68,8 @@ func main() {
 	fx.New(
 		fx.Provide(
 			newGRPCService,
-			newHttpService,
 		),
-		fx.Invoke(func(*median.Server) {}),
-		fx.Invoke(func(*http.Server) {}),
+		fx.Invoke(registerGRPCService),
+		fx.Invoke(registerHTTPGateway),
 	).Run()
 }
