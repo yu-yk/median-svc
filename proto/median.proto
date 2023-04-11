@@ -5,6 +5,7 @@ option go_package = "github.com/yu-yk/median-svc/proto";
 
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
+import "validate/validate.proto";
 
 service median {
   rpc PushNumber (PushNumberRequest) returns (PushNumberResponse);
@@ -16,7 +17,7 @@ service median {
 }
 
 message PushNumberRequest {
-  int32 number = 1;
+  int32 number = 1 [(validate.rules).int32 = {gte: -100, lte: 100}];
 }
 
 message PushNumberResponse {

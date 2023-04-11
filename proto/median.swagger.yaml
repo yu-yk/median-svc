@@ -1,0 +1,67 @@
+swagger: "2.0"
+info:
+  title: median.proto
+  version: version not set
+tags:
+  - name: median
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /median:
+    get:
+      operationId: median_GetMedian
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/medianGetMedianResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/googlerpcStatus'
+      tags:
+        - median
+definitions:
+  googlerpcStatus:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      details:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/protobufAny'
+  medianGetMedianResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/medianStatus'
+  medianPushNumberResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/medianStatus'
+  medianStatus:
+    type: object
+    properties:
+      median:
+        type: number
+        format: double
+      size:
+        type: integer
+        format: int32
+      lastUpdated:
+        type: string
+        format: date-time
+  protobufAny:
+    type: object
+    properties:
+      '@type':
+        type: string
+    additionalProperties: {}
