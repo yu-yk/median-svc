@@ -6,6 +6,7 @@ import (
 
 	"github.com/yu-yk/median-svc/lib"
 	"github.com/yu-yk/median-svc/proto"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -14,17 +15,25 @@ type Server struct {
 	leftHeap  lib.MaxHeap
 	rightHeap lib.MinHeap
 	status    proto.Status
+	logger    *zap.Logger
 }
 
-func NewServer() *Server {
+func NewServer(logger *zap.Logger) *Server {
 	return &Server{
 		leftHeap:  lib.MaxHeap{},
 		rightHeap: lib.MinHeap{},
 		status:    proto.Status{},
+		logger:    logger,
 	}
 }
 
 func (s *Server) PushNumber(ctx context.Context, req *proto.PushNumberRequest) (*proto.PushNumberResponse, error) {
+	s.logger.Info("request log", zap.String("params", req.String()))
+	if err := req.ValidateAll(); err != nil {
+		s.logger.Error("validation error", zap.Error(err))
+		return nil, err
+	}
+
 	// 1. check the num is smaller than left's top or not
 	// 2. if yes, push then num to left, else push to right
 	// 3. if the length difference of left and right is >= 2,

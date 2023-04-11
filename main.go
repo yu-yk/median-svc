@@ -10,13 +10,14 @@ import (
 	"github.com/yu-yk/median-svc/median"
 	"github.com/yu-yk/median-svc/proto"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-func newGRPCService() (*grpc.Server, *median.Server) {
+func newGRPCService(logger *zap.Logger) (*grpc.Server, *median.Server) {
 	grpcServer := grpc.NewServer()
-	medianServer := median.NewServer()
+	medianServer := median.NewServer(logger)
 
 	return grpcServer, medianServer
 }
@@ -68,6 +69,7 @@ func main() {
 	fx.New(
 		fx.Provide(
 			newGRPCService,
+			zap.NewExample,
 		),
 		fx.Invoke(registerGRPCService),
 		fx.Invoke(registerHTTPGateway),
